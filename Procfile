@@ -1,2 +1,2 @@
-release: alembic -c ./pod042_bot/alembic.ini upgrade head
+release: ./release.sh
 web: python -m pod042_bot
