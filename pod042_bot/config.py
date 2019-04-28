@@ -5,6 +5,8 @@ import os
 import sys
 
 try:
+    DATABASE_URL = os.environ['DATABASE']
+    """Адрес базы данных."""
     BOT_TOKEN = os.environ['BOT_TOKEN']
     """Токен бота, получать у @BotFather."""
     PRODUCTION = bool(os.getenv('PRODUCTION', False))
@@ -17,6 +19,7 @@ try:
 except KeyError as e:
     sys.stderr.write('Приложение не сконфигурировано, проверьте необходимые переменные окружения в config.py!\n'
                      f'Не хватает переменной "{e.args[0]}"\n')
+    print(os.environ)
     sys.exit(-1)
 
 LOG_FORMAT = os.getenv('LOG_FORMAT', 'P%(process)d T%(thread)d %(asctime)s <%(filename)s:'

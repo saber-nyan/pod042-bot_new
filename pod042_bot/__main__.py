@@ -5,7 +5,7 @@ import logging.config
 
 from telegram.ext import Updater, CommandHandler
 
-from pod042_bot import config, commands
+from pod042_bot import config, commands, models
 
 logging.config.dictConfig({
     'version': 1,
@@ -75,6 +75,7 @@ def main():
     )
 
     updater.dispatcher.add_handler(CommandHandler("start", commands.start))
+    models.init_db()
 
     log.info('Init complete, starting polling...')
     run_bot(updater)
