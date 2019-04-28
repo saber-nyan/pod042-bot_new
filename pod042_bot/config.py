@@ -12,7 +12,7 @@ try:
     if PRODUCTION:
         HEROKU_APP_NAME = os.environ['HEROKU_APP_NAME']
         """Имя приложения Heroku."""
-        PORT = os.environ['PORT']
+        PORT = int(os.environ['PORT'])
         """Какой порт слушать боту (выставляет сам Heroku)."""
 except KeyError as e:
     sys.stderr.write('Приложение не сконфигурировано, проверьте необходимые переменные окружения в config.py!\n'
