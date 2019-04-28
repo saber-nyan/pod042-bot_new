@@ -1,2 +1,2 @@
-release: cd ./pod042_bot/migrations/ && alembic upgrade head && cd ../../
+release: alembic -c ./pod042_bot/alembic.ini upgrade head
 web: python -m pod042_bot
