@@ -3,16 +3,17 @@
 """
 import logging
 from contextlib import contextmanager
+from typing import Dict
 
+import sqlalchemy.orm as orm
 from sqlalchemy import create_engine, Column, Integer, String, Table, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
 
 from pod042_bot import config
 
 log = logging.getLogger('pod042-bot')
 
-engine = create_engine(config.DATABASE_URL)
+engine = create_engine(config.DATABASE_URL, echo=config.ORM_ECHO)
 Base = declarative_base()
 
 user_and_chat_association = Table(
@@ -29,7 +30,7 @@ class Chat(Base):
     chat_id = Column(Integer, primary_key=True)
     chat_title = Column(String, nullable=True)
 
-    users = relationship(
+    users = orm.relationship(
         'User',
         secondary=user_and_chat_association,
         back_populates='chats'
@@ -46,8 +47,9 @@ class User(Base):
     user_id = Column(Integer, primary_key=True)
     username = Column(String, nullable=True)
     first_name = Column(String)
+    last_name = Column(String, nullable=True)
 
-    chats = relationship(
+    chats = orm.relationship(
         'Chat',
         secondary=user_and_chat_association,
         back_populates='users'
@@ -57,13 +59,13 @@ class User(Base):
 def init_db():
     """Создает глобальную сессию."""
     global Session
-    Session = sessionmaker(bind=engine)
+    Session = orm.sessionmaker(bind=engine)
 
 
 @contextmanager
 def session_scope():
     """Удобная обертка для открытия безопасного сессий БД."""
-    session = Session()
+    session: orm.Session = Session()
     try:
         yield session
         session.commit()
@@ -73,3 +75,21 @@ def session_scope():
         raise
     finally:
         session.close()
+
+
+def get_or_create(session: orm.Session, model: Base, **kwargs: Dict) -> Base:
+    """
+    Создает или получает модель из БД, если она уже существует.
+
+    :param session: Сессия БД
+    :param model: Класс модели
+    :param kwargs: Аргументы фильтрации/создания
+    :return: Полученную или созданную модель
+    """
+    instance = session.query(model).filter_by(**kwargs).first()
+
+    if not instance:
+        instance = model(**kwargs)
+        session.add(instance)
+
+    return instance

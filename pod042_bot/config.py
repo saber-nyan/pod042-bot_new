@@ -21,6 +21,9 @@ except KeyError as e:
                      f'Не хватает переменной "{e.args[0]}"\n')
     sys.exit(-1)
 
+THREADS_NUM = int(os.getenv('THREADS_NUM', 8))
+"""Количество потоков."""
+
 LOG_FORMAT = os.getenv('LOG_FORMAT', 'P%(process)d T%(thread)d %(asctime)s <%(filename)s:'
                                      '%(lineno)d, %(funcName)s()> [%(levelname)s] %(name)s: %(message)s')
 """
@@ -30,6 +33,9 @@ https://docs.python.org/3/library/logging.html#logrecord-attributes
 
 LOG_LEVEL = os.getenv('LOG_LEVEL', 'DEBUG')
 """Подробность лога."""
+
+ORM_ECHO = bool(os.getenv('ORM_ECHO', 0))
+"""Вывод всех SQL-запросов в консоль. Полезно только при отладке."""
 
 PROXY_HOST = os.getenv('PROXY_HOST')
 """Имя хоста SOCKS5 прокси-сервера."""

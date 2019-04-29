@@ -3,7 +3,7 @@
 """
 import logging.config
 
-from telegram.ext import Updater, CommandHandler
+from telegram.ext import Updater, CommandHandler, Filters, MessageHandler
 
 from pod042_bot import config, commands, models
 
@@ -74,7 +74,11 @@ def main():
         request_kwargs=request_kwargs
     )
 
+    updater.dispatcher.add_handler(MessageHandler(Filters.all, commands.all_messages), group=-1)
+
     updater.dispatcher.add_handler(CommandHandler("start", commands.start))
+    updater.dispatcher.add_handler(MessageHandler(Filters.regex(r'@(all|everyone|room)'), commands.everyone))
+
     models.init_db()
 
     log.info('Init complete, starting polling...')
