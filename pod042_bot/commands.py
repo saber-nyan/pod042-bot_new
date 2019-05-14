@@ -63,7 +63,7 @@ def config(bot: Bot, update: Update):
             vk_groups = 'Пусто!'
 
         msg = (f'Вошел в режим конфигурации.\n\n'
-               f'Текущие группы ВК: ```{vk_groups}```')
+               f'Текущие группы ВК: ```\n{vk_groups}```')
     update.message.reply_text(msg, parse_mode=ParseMode.MARKDOWN,
                               reply_markup=InlineKeyboardMarkup(
                                   [

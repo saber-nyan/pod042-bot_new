@@ -4,7 +4,7 @@
 import logging
 
 import vk_api
-from telegram import Bot, Update, InlineKeyboardButton, ParseMode
+from telegram import Bot, Update, InlineKeyboardButton, ParseMode, InlineKeyboardMarkup
 
 from pod042_bot import models, vk_client
 
@@ -44,17 +44,33 @@ def inline_button(bot: Bot, update: Update):
     msg_id = query.message.message_id
     if query.data == 'vk_config':
         log.debug(f'Starting VK configuration with chat #{chat_id}')
-        keyboard = []
         with models.session_scope() as session:
             chat: models.Chat = session.query(models.Chat).get(chat_id)
             chat.state = models.ChatState.VK_CONFIG
+            keyboard = []
             for group in chat.vk_groups:
-                keyboard.append([InlineKeyboardButton(group.name, callback_data=f'vkd_{group.url_name}')])
+                keyboard.append([InlineKeyboardButton(group.name, callback_data=f'vkd_{group.url_name}'), ])
 
         bot.edit_message_text('Редактирование групп ВК!\n'
                               'Нажмите на группу для удаления, отправьте ссылку для добавления, '
-                              '/abort для отмены.', chat_id=chat_id, message_id=msg_id, reply_markup=keyboard)
-
+                              '/abort для отмены.', chat_id=chat_id, message_id=msg_id,
+                              reply_markup=InlineKeyboardMarkup(keyboard))
+    elif query.data.startswith('vkd_'):
+        url_name = query.data.split('vkd_', 1)[1]
+        with models.session_scope() as session:
+            chat: models.Chat = session.query(models.Chat).get(chat_id)
+            # noinspection PyBroadException
+            try:
+                chat.vk_groups.remove(session.query(models.VkGroup).get(url_name))
+            except Exception:
+                log.warning(f'No such VkGroup ({url_name}) in {chat}!', exc_info=True)
+            keyboard = []
+            for group in chat.vk_groups:
+                keyboard.append([InlineKeyboardButton(group.name, callback_data=f'vkd_{group.url_name}'), ])
+        bot.edit_message_text('Редактирование групп ВК!\n'
+                              'Нажмите на группу для удаления, отправьте ссылку для добавления, '
+                              '/abort для отмены.', chat_id=chat_id, message_id=msg_id,
+                              reply_markup=InlineKeyboardMarkup(keyboard))
     else:
         log.error(f'Unknown query {query.data}!')
 
