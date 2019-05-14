@@ -56,7 +56,7 @@ else:
 def main():
     """Инициализирует бота."""
     log.info('Initializing bot...')
-    
+
     models.init_db()
 
     init_vk()
@@ -91,6 +91,8 @@ def main():
     d.add_handler(CommandHandler('config', commands.config))
 
     d.add_handler(CallbackQueryHandler(handlers.inline_button))
+
+    d.add_error_handler(handlers.error)
 
     log.info('Init complete, starting polling...')
     run_bot(updater)

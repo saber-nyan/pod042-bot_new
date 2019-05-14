@@ -4,11 +4,21 @@
 import logging
 
 import vk_api
-from telegram import Bot, Update, InlineKeyboardButton, ParseMode, InlineKeyboardMarkup
+from telegram import Bot, Update, InlineKeyboardButton, ParseMode, InlineKeyboardMarkup, TelegramError
 
 from pod042_bot import models, vk_client
 
 log = logging.getLogger('pod042-bot')
+
+
+def error(bot: Bot, update: Update, error: TelegramError):
+    log.error(f'Got error! {error.message}')
+    # noinspection PyBroadException
+    try:
+        update.message.reply_text(f'Произошла ошибка, пожалуйста, свяжитесь с @saber_nyan :(\n'
+                                  f'{error.message}')
+    except Exception:
+        pass
 
 
 def all_messages(bot: Bot, update: Update):
