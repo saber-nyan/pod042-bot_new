@@ -22,6 +22,29 @@ user_and_chat_association = Table(
     Column('users_user_id', Integer, ForeignKey('users.user_id'))
 )
 
+chat_and_vk_group_association = Table(
+    'chat_and_vk_group', Base.metadata,
+    Column('chats_chat_id', Integer, ForeignKey('chats.chat_id')),
+    Column('vk_groups_url_name', String, ForeignKey('vk_groups.url_name'))
+)
+
+
+class ChatState:  # PostgreSQL + Alembic + enum.Enum == PAIN
+    """Состояния чата."""
+    NONE = 0
+    CONFIG = 1
+
+
+class VkGroup(Base):
+    """Группа ВКонтакте для постинга контента в чат оттуда."""
+    __tablename__ = 'vk_groups'
+
+    url_name = Column(String, primary_key=True)
+    name = Column(String, nullable=False)
+
+    def __repr__(self) -> str:
+        return f'<VkGroup(url_name={self.url_name}, name={self.name})>'
+
 
 class Chat(Base):
     """Личный или групповой чат."""
@@ -29,15 +52,21 @@ class Chat(Base):
 
     chat_id = Column(Integer, primary_key=True)
     chat_title = Column(String, nullable=True)
+    state = Column(Integer, default=ChatState.NONE, nullable=False)
 
     users = orm.relationship(
         'User',
         secondary=user_and_chat_association,
         back_populates='chats'
     )
+    vk_groups = orm.relationship(
+        'VkGroup',
+        secondary=chat_and_vk_group_association
+    )
 
     def __repr__(self) -> str:
-        return f'<Chat(chat_id={self.chat_id})>'
+        return f'<Chat(chat_id={self.chat_id}, chat_title={self.chat_title}, ' \
+            f'state={self.state}, users={self.users}, vk_groups={self.vk_groups})>'
 
 
 class User(Base):
@@ -54,6 +83,10 @@ class User(Base):
         secondary=user_and_chat_association,
         back_populates='users'
     )
+
+    def __repr__(self) -> str:
+        return f'<User(user_id={self.user_id}, username={self.username}, ' \
+            f'first_name={self.first_name}, last_name={self.last_name})>'
 
 
 def init_db():
