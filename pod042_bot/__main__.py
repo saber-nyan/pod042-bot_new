@@ -3,9 +3,10 @@
 """
 import logging.config
 
-from telegram.ext import Updater, CommandHandler, Filters, MessageHandler
+from telegram.ext import Updater, CommandHandler, Filters, MessageHandler, CallbackQueryHandler
 
-from pod042_bot import config, commands, models
+from pod042_bot import config, commands, models, handlers
+from pod042_bot.vk_client import init_vk
 
 logging.config.dictConfig({
     'version': 1,
@@ -55,6 +56,10 @@ else:
 def main():
     """Инициализирует бота."""
     log.info('Initializing bot...')
+    
+    models.init_db()
+
+    init_vk()
 
     request_kwargs = None
     if config.PROXY_HOST:
@@ -74,12 +79,18 @@ def main():
         request_kwargs=request_kwargs
     )
 
-    updater.dispatcher.add_handler(MessageHandler(Filters.all, commands.all_messages), group=-1)
+    d = updater.dispatcher
+    d.add_handler(MessageHandler(Filters.all, handlers.all_messages), group=-3)
 
-    updater.dispatcher.add_handler(CommandHandler("start", commands.start))
-    updater.dispatcher.add_handler(MessageHandler(Filters.regex(r'@(all|everyone|room)'), commands.everyone))
+    d.add_handler(CommandHandler('abort', commands.abort), group=-2)
 
-    models.init_db()
+    d.add_handler(MessageHandler(Filters.text, handlers.new_vk_group), group=-1)
+
+    d.add_handler(CommandHandler('start', commands.start))
+    d.add_handler(MessageHandler(Filters.regex(r'@(all|everyone|room)'), commands.everyone))
+    d.add_handler(CommandHandler('config', commands.config))
+
+    d.add_handler(CallbackQueryHandler(handlers.inline_button))
 
     log.info('Init complete, starting polling...')
     run_bot(updater)

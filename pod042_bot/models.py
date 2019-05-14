@@ -33,6 +33,15 @@ class ChatState:  # PostgreSQL + Alembic + enum.Enum == PAIN
     """Состояния чата."""
     NONE = 0
     CONFIG = 1
+    VK_CONFIG = 2
+
+
+class VkCred(Base):
+    """Костыль для предотвращения переавторизации ВК."""
+    __tablename__ = 'vk_creds'
+
+    filename = Column(String, primary_key=True)
+    json = Column(String, nullable=False)
 
 
 class VkGroup(Base):
@@ -44,6 +53,9 @@ class VkGroup(Base):
 
     def __repr__(self) -> str:
         return f'<VkGroup(url_name={self.url_name}, name={self.name})>'
+
+    def __str__(self) -> str:
+        return f'{self.name} ({self.url_name})'
 
 
 class Chat(Base):

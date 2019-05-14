@@ -36,5 +36,6 @@ setuptools.setup(
         'SQLAlchemy==1.3.3',
         'alembic==1.0.10',
         'psycopg2-binary==2.8.2',
+        'vk-api==11.4.0',
     ],
 )
