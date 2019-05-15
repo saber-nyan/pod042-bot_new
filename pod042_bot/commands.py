@@ -141,4 +141,4 @@ def codfish(bot: Bot, update: Update, args: List[str]):
             return
         with pkg_resources.resource_stream('pod042_bot.resources.videos', 'codfish.mp4') as f:
             bot.send_video(update.effective_chat.id, f,
-                           caption=f'Со всего размаху пизданул {", ".join(result)}.')
+                           caption=f'Со всего размаху пизданул {", ".join(result)} треской.')
