@@ -2,7 +2,6 @@
 import json
 import logging
 import re
-from typing import List
 
 from jconfig.base import BaseConfig
 from vk_api import VkApi, VkTools
@@ -60,9 +59,3 @@ def init_vk():
 
     global vk_tools
     vk_tools = VkTools(vk_session)
-
-
-def get_random_media(groups: List[models.VkGroup]):
-    """Случайно выбирает и получает прямую ссылку на медиа из одной из групп."""
-    # TODO
-    return 'https://www.google.ru/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png'

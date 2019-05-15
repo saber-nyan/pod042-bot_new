@@ -2,11 +2,13 @@
 Функции команд бота.
 """
 import logging
+import random
+from typing import List, Dict
 
 from sqlalchemy.orm import selectinload
-from telegram import Bot, Update, ParseMode, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram import Bot, Update, ParseMode, InlineKeyboardMarkup, InlineKeyboardButton, ChatAction
 
-from pod042_bot import models
+from pod042_bot import models, vk_client
 
 log = logging.getLogger('pod042-bot')
 
@@ -70,3 +72,53 @@ def config(bot: Bot, update: Update):
                                       [InlineKeyboardButton('Изменить группы ВК', callback_data='vk_config'), ],
                                   ]
                               ))
+
+
+def vk_pic(bot: Bot, update: Update):
+    """Возвращает случайно выбранное медиа из настроенных для чата групп ВКонтакте."""
+    with models.session_scope() as session:
+        chat: models.Chat = session.query(models.Chat).get(update.effective_chat.id)
+        groups = chat.vk_groups
+        if not groups:
+            update.message.reply_text('Сначала настройте группы с помощью /config!')
+            return
+        bot.send_chat_action(update.effective_chat.id, ChatAction.UPLOAD_PHOTO)
+        chosen_group: models.VkGroup = random.choice(groups)
+        log.debug(f'Selected {chosen_group}')
+        response: List[Dict] = vk_client.vk_tools.get_all('wall.get', max_count=10, values={
+            'domain': chosen_group.url_name,
+            'fields': 'attachments',
+            'version': vk_client.VK_VER,
+        }, limit=250)['items']
+        media_url = ''
+        while not media_url:
+            post = random.choice(response)
+            if post['marked_as_ads']:
+                log.debug('Skipping ad')
+                continue
+            if 'attachments' not in post:
+                log.debug('Skipping post w/o attachs')
+                continue
+            for attach in post['attachments']:
+                if 'doc' in attach and attach['doc']['ext'] == 'gif':
+                    log.debug('Found gif!')
+                    media_url = attach['doc']['url']
+                    break
+                elif 'photo' in attach:
+                    log.debug('Found picture!')
+                    sizes_list: List[Dict] = attach['photo']['sizes']
+                    avail_codes = map(lambda e: e['type'], sizes_list)
+                    if 'w' in avail_codes:
+                        code = 'w'
+                    elif 'z' in avail_codes:
+                        code = 'z'
+                    elif 'y' in avail_codes:
+                        code = 'y'
+                    else:
+                        continue
+                    element = next(i for i in sizes_list if i['type'] == code)
+                    if not element:
+                        continue
+                    media_url = element['url']
+        update.message.reply_text(f'{media_url}\n'
+                                  f'Из https://vk.com/{chosen_group.url_name}')

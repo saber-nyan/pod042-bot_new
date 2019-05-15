@@ -5,8 +5,7 @@ import logging.config
 
 from telegram.ext import Updater, CommandHandler, Filters, MessageHandler, CallbackQueryHandler
 
-from pod042_bot import config, commands, models, handlers
-from pod042_bot.vk_client import init_vk
+from pod042_bot import config, commands, models, handlers, vk_client
 
 logging.config.dictConfig({
     'version': 1,
@@ -59,7 +58,7 @@ def main():
 
     models.init_db()
 
-    init_vk()
+    vk_client.init_vk()
 
     request_kwargs = None
     if config.PROXY_HOST:
@@ -75,7 +74,7 @@ def main():
 
     updater = Updater(
         token=config.BOT_TOKEN,
-        workers=8,
+        workers=config.THREADS_NUM,
         request_kwargs=request_kwargs
     )
 
@@ -87,8 +86,9 @@ def main():
     d.add_handler(MessageHandler(Filters.text, handlers.new_vk_group), group=-1)
 
     d.add_handler(CommandHandler('start', commands.start))
-    d.add_handler(MessageHandler(Filters.regex(r'@(all|everyone|room)'), commands.everyone))
+    d.add_handler(CommandHandler('vk_pic', commands.vk_pic))
     d.add_handler(CommandHandler('config', commands.config))
+    d.add_handler(MessageHandler(Filters.regex(r'@(all|everyone|room)'), commands.everyone))
 
     d.add_handler(CallbackQueryHandler(handlers.inline_button))
 

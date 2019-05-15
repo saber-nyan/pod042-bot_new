@@ -103,8 +103,10 @@ class User(Base):
 
 def init_db():
     """Создает глобальную сессию."""
+    log.info('Creating DB session...')
     global Session
     Session = orm.sessionmaker(bind=engine)
+    log.info('...success!')
 
 
 @contextmanager

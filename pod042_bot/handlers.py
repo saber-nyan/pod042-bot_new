@@ -11,12 +11,13 @@ from pod042_bot import models, vk_client
 log = logging.getLogger('pod042-bot')
 
 
-def error(bot: Bot, update: Update, error: TelegramError):
-    log.error(f'Got error! {error.message}')
+def error(bot: Bot, update: Update, tg_error: TelegramError):
+    """Обрабатывает ошибки (но работает ли?...)"""
+    log.error(f'Got error! {tg_error.message}')
     # noinspection PyBroadException
     try:
         update.message.reply_text(f'Произошла ошибка, пожалуйста, свяжитесь с @saber_nyan :(\n'
-                                  f'{error.message}')
+                                  f'{tg_error.message}')
     except Exception:
         pass
 
@@ -77,6 +78,7 @@ def inline_button(bot: Bot, update: Update):
             keyboard = []
             for group in chat.vk_groups:
                 keyboard.append([InlineKeyboardButton(group.name, callback_data=f'vkd_{group.url_name}'), ])
+
         bot.edit_message_text('Редактирование групп ВК!\n'
                               'Нажмите на группу для удаления, отправьте ссылку для добавления, '
                               '/abort для отмены.', chat_id=chat_id, message_id=msg_id,
@@ -129,4 +131,4 @@ def new_vk_group(bot: Bot, update: Update):
             msg += '<b>Не добавлено:</b>\n'
             for entry in invalid_links:
                 msg += entry + '\n'
-    update.message.reply_text(msg, parse_mode=ParseMode.HTML, )
+    update.message.reply_text(msg, parse_mode=ParseMode.HTML)
