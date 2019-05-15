@@ -64,7 +64,8 @@ def config(bot: Bot, update: Update):
         if not vk_groups:
             vk_groups = 'Пусто!'
 
-        msg = (f'Вошел в режим конфигурации.\n\n'
+        msg = (f'Вошел в режим конфигурации.\n'
+               f'/abort для отмены.\n\n'
                f'Текущие группы ВК: ```\n{vk_groups}```')
     update.message.reply_text(msg, parse_mode=ParseMode.MARKDOWN,
                               reply_markup=InlineKeyboardMarkup(
