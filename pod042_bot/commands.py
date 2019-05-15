@@ -5,10 +5,11 @@ import logging
 import random
 from typing import List, Dict
 
+import pkg_resources
 from sqlalchemy.orm import selectinload
 from telegram import Bot, Update, ParseMode, InlineKeyboardMarkup, InlineKeyboardButton, ChatAction
 
-from pod042_bot import models, vk_client
+from pod042_bot import models, vk_client, utils
 
 log = logging.getLogger('pod042-bot')
 
@@ -123,3 +124,21 @@ def vk_pic(bot: Bot, update: Update):
                     media_url = element['url']
         update.message.reply_text(f'{media_url}\n'
                                   f'Из https://vk.com/{chosen_group.url_name}')
+
+
+def codfish(bot: Bot, update: Update, args: List[str]):
+    """Бьет треской по лицу выбранных пользователей. С видео!"""
+    if not args:
+        update.message.reply_text('Неверный формат команды. Пиши `/codfish @user_name`!',
+                                  parse_mode=ParseMode.MARKDOWN)
+        return
+    bot.send_chat_action(update.effective_chat.id, ChatAction.RECORD_VIDEO)
+    with models.session_scope() as session:
+        chat: models.Chat = session.query(models.Chat).get(update.effective_chat.id)
+        result = utils.get_names(args, bot.username, session, chat)
+        if not result:
+            update.message.reply_text('Не смог никого вспомнить...')
+            return
+        with pkg_resources.resource_stream('pod042_bot.resources.videos', 'codfish.mp4') as f:
+            bot.send_video(update.effective_chat.id, f,
+                           caption=f'Со всего размаху пизданул {", ".join(result)}.')

@@ -87,6 +87,7 @@ def main():
 
     d.add_handler(CommandHandler('start', commands.start))
     d.add_handler(CommandHandler('vk_pic', commands.vk_pic))
+    d.add_handler(CommandHandler('codfish', commands.codfish, pass_args=True))
     d.add_handler(CommandHandler('config', commands.config))
     d.add_handler(MessageHandler(Filters.regex(r'@(all|everyone|room)'), commands.everyone))
 
