@@ -3,13 +3,17 @@
 """
 import logging
 import random
+import re
 from typing import List, Dict
 
 import pkg_resources
+import requests
 from sqlalchemy.orm import selectinload
 from telegram import Bot, Update, ParseMode, InlineKeyboardMarkup, InlineKeyboardButton, ChatAction
 
 from pod042_bot import models, vk_client, utils
+
+HTML_ANEK_REGEX = re.compile(r'<meta name="description" content="(.*?)">', re.DOTALL)
 
 log = logging.getLogger('pod042-bot')
 
@@ -185,3 +189,18 @@ def pat(bot: Bot, update: Update, args: List[str]):
                 else:
                     bot.send_video(update.effective_chat.id, f,
                                    caption=f'Ментально погладил {", ".join(result)}!')
+
+
+def anek(bot: Bot, update: Update):
+    """Присылает рандомный анекдот с baneks.ru."""
+    response = requests.get(f'https://baneks.ru/{random.randrange(1, 1142)}')
+    response.encoding = 'utf-8'
+    matches = HTML_ANEK_REGEX.search(response.text)
+    result = matches.group(1) if matches else 'Ошибка...'
+    update.message.reply_text(f'<code>{result}</code>', parse_mode=ParseMode.HTML)
+
+
+def quote(bot: Bot, update: Update):
+    """Присылает рандомную цитату с tproger.com."""
+    result = requests.get('https://tproger.ru/wp-content/plugins/citation-widget/get-quote.php').text
+    update.message.reply_text(f'<code>{result}</code>', parse_mode=ParseMode.HTML)
