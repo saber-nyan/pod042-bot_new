@@ -129,16 +129,59 @@ def vk_pic(bot: Bot, update: Update):
 def codfish(bot: Bot, update: Update, args: List[str]):
     """Бьет треской по лицу выбранных пользователей. С видео!"""
     if not args:
-        update.message.reply_text('Неверный формат команды. Пиши `/codfish @user_name`!',
+        update.message.reply_text('Неверный формат команды. Пиши `/codfish @user_name1 @user_name2 ...`!',
                                   parse_mode=ParseMode.MARKDOWN)
         return
     bot.send_chat_action(update.effective_chat.id, ChatAction.RECORD_VIDEO)
     with models.session_scope() as session:
         chat: models.Chat = session.query(models.Chat).get(update.effective_chat.id)
-        result = utils.get_names(args, bot.username, session, chat)
-        if not result:
-            update.message.reply_text('Не смог никого вспомнить...')
-            return
+        result = utils.get_names(args, session, chat)
         with pkg_resources.resource_stream('pod042_bot.resources.videos', 'codfish.mp4') as f:
-            bot.send_video(update.effective_chat.id, f,
-                           caption=f'Со всего размаху пизданул {", ".join(result)} треской.')
+            if any(x in args for x in ('@all', '@everyone', '@room')):
+                bot.send_video(update.effective_chat.id, f,
+                               caption='Отпиздил треской всю комнату, да и себя ебанул, для профилактики.')
+            elif len(args) == 1 and (args[0][1:] == bot.username or args[0][1:] == bot.first_name):
+                bot.send_video(update.effective_chat.id, f,
+                               caption='Хорошенько пизданул себя треской.')
+            else:
+                if not result:
+                    update.message.reply_text('Не смог никого вспомнить...')
+                    return
+                if bot.username in args or bot.first_name in args:
+                    bot.send_video(
+                        update.effective_chat.id, f,
+                        caption=f'Со всего размаху пизданул треской '
+                        f'{", ".join(result)}, да и для себя трески не пожалел.'
+                    )
+                else:
+                    bot.send_video(update.effective_chat.id, f,
+                                   caption=f'Со всего размаху пизданул треской {", ".join(result)}.')
+
+
+def pat(bot: Bot, update: Update, args: List[str]):
+    """Гладит указанных пользователей. Да, тоже с видео!"""
+    if not args:
+        update.message.reply_text('Неверный формат команды. Пиши `/pat @user_name1 @user_name2 ...`!',
+                                  parse_mode=ParseMode.MARKDOWN)
+        return
+    bot.send_chat_action(update.effective_chat.id, ChatAction.RECORD_VIDEO)
+    with models.session_scope() as session:
+        chat: models.Chat = session.query(models.Chat).get(update.effective_chat.id)
+        result = utils.get_names(args, session, chat)
+        with pkg_resources.resource_stream('pod042_bot.resources.videos', 'pat.mp4') as f:
+            if any(x in args for x in ('@all', '@everyone', '@room')):
+                bot.send_video(update.effective_chat.id, f,
+                               caption='Ментально погладил всех в комнате!')
+            elif len(args) == 1 and (args[0][1:] == bot.username or args[0][1:] == bot.first_name):
+                bot.send_video(update.effective_chat.id, f,
+                               caption='Сам себя не погладишь – никто не погладит...')
+            else:
+                if not result:
+                    update.message.reply_text('Не смог никого вспомнить...')
+                    return
+                if bot.username in args or bot.first_name in args:
+                    bot.send_video(update.effective_chat.id, f,
+                                   caption=f'Ментально погладил {", ".join(result)}, да и себя не обидел!')
+                else:
+                    bot.send_video(update.effective_chat.id, f,
+                                   caption=f'Ментально погладил {", ".join(result)}!')
