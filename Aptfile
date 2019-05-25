@@ -1,4 +1,2 @@
-ffmpeg
+libav-tools
 libavcodec-extra
-libvpx5
-libpulse0
