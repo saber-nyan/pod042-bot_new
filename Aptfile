@@ -1,3 +1,4 @@
 ffmpeg
 libavcodec-extra
 libvpx5
+libpulse0
