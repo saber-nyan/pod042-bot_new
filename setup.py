@@ -9,7 +9,7 @@ with open('README.md', 'rt', encoding='utf-8') as f:
 
 setuptools.setup(
     name='pod042-bot',
-    version='0.0.1a1',
+    version='0.0.2',
     author='saber-nyan',
     author_email='saber-nyan@ya.ru',
     license='WTFPL',
@@ -37,7 +37,7 @@ setuptools.setup(
         'alembic==1.0.10',
         'psycopg2-binary==2.8.2',
         'vk-api==11.4.0',
-        'pydub @ https://github.com/saber-nyan/pydub/tarball/master#egg=pydub==0.23.1',
+        'pydub @ https://github.com/saber-nyan/pydub/tarball/master#egg=pydub-0.23.2',
         'numpy==1.16.3',
     ],
 )
