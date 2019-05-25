@@ -2,8 +2,13 @@
 Обработчики особых событий.
 """
 import logging
+from io import BytesIO
 
+import math
+import numpy as np
+import telegram
 import vk_api
+from pydub import AudioSegment
 from telegram import Bot, Update, InlineKeyboardButton, ParseMode, InlineKeyboardMarkup, TelegramError
 
 from pod042_bot import models, vk_client
@@ -132,3 +137,38 @@ def new_vk_group(bot: Bot, update: Update):
             for entry in invalid_links:
                 msg += entry + '\n'
     update.message.reply_text(msg, parse_mode=ParseMode.HTML)
+
+
+def bassboost(bot: Bot, update: Update):
+    """РАЗБЕЖАВШИСЬ, ДЕЛАЕТ БАССБУСТ"""
+
+    def bass_line_freq(track):
+        sample_track = list(track)
+        log.debug(2)
+        # c-value
+        est_mean = np.mean(sample_track)
+        log.debug(3)
+        # a-values
+        est_std = 3 * np.std(sample_track) / (math.sqrt(2))
+        log.debug(4)
+        bass_factor = int(round((est_std - est_mean) * 0.005))
+        log.debug(5)
+        return bass_factor
+
+    update.message.reply_text('БYСTNНГ')
+    file_info: telegram.File = update.message.audio.get_file()
+    log.debug(f'Got file_info: {file_info}')
+    byte_array = file_info.download_as_bytearray()
+    in_buffer = BytesIO(byte_array)
+    out_buffer = BytesIO()
+    log.debug('Downloaded, processing...')
+    sample = AudioSegment.from_file(in_buffer, format='mp3')
+    log.debug(1)
+    filtered = sample.low_pass_filter(bass_line_freq(sample.get_array_of_samples()))
+    log.debug(6)
+    combined = (sample + 5).overlay(filtered + 10)
+    log.debug(7)
+    combined.export(out_buffer, codec='libmp3lame', format='mp3', bitrate='320')
+    log.debug(8)
+    log.debug('Processed, sending...')
+    update.message.reply_audio(out_buffer)

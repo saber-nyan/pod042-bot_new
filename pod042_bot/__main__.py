@@ -106,6 +106,7 @@ def main():
     d.add_handler(CommandHandler('quote', commands.quote))
     d.add_handler(CommandHandler('config', commands.config))
     d.add_handler(MessageHandler(Filters.regex(r'@(all|everyone|room)'), commands.everyone))
+    d.add_handler(MessageHandler(Filters.audio, handlers.bassboost))
 
     d.add_handler(CallbackQueryHandler(handlers.inline_button))
 

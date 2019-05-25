@@ -37,5 +37,7 @@ setuptools.setup(
         'alembic==1.0.10',
         'psycopg2-binary==2.8.2',
         'vk-api==11.4.0',
+        'pydub==0.23.1',
+        'numpy==1.16.3',
     ],
 )
