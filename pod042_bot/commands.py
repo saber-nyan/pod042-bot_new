@@ -126,8 +126,9 @@ def vk_pic(bot: Bot, update: Update):
                     if not element:
                         continue
                     media_url = element['url']
-        update.message.reply_text(f'{media_url}\n'
-                                  f'Из https://vk.com/{chosen_group.url_name}')
+        # update.message.reply_text(f'{media_url}\n'
+        #                           f'Из https://vk.com/{chosen_group.url_name}')
+        update.message.reply_photo(photo=media_url, caption=f'Из https://vk.com/{chosen_group.url_name}')
 
 
 def codfish(bot: Bot, update: Update, args: List[str]):

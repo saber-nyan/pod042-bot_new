@@ -2,6 +2,7 @@
 Основной модуль.
 """
 import logging.config
+import socket
 
 from telegram.ext import Updater, CommandHandler, Filters, MessageHandler, CallbackQueryHandler
 
@@ -55,6 +56,18 @@ else:
 def main():
     """Инициализирует бота."""
     log.info('Initializing bot...')
+
+    if not config.PRODUCTION:
+        old_getaddrinfo = socket.getaddrinfo
+
+        def new_getaddrinfo(*args, **kwargs):
+            """Патч для отключения IPv6."""
+            responses = old_getaddrinfo(*args, **kwargs)
+            return [response
+                    for response in responses
+                    if response[0] == socket.AF_INET]
+
+        socket.getaddrinfo = new_getaddrinfo
 
     models.init_db()
 
