@@ -8,7 +8,7 @@ import setuptools
 with open('README.md', 'rt', encoding='utf-8') as f:
     long_description = f.read()
 
-subprocess.call('pip install https://github.com/saber-nyan/pydub/archive/master.zip')
+subprocess.call('pip install https://github.com/saber-nyan/pydub/archive/master.zip', shell=True)
 
 setuptools.setup(
     name='pod042-bot',
