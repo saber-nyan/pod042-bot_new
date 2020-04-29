@@ -166,6 +166,8 @@ def bassboost(update: Update, context: CallbackContext):
                                       progress_msg.message_id)
         return bass_factor
 
+    update.message.reply_text('<b><i><u>РАЗБЕЖАВШИСЬ, ДЕЛАЮ БАССБУСТ</u></i></b>',
+                              parse_mode=ParseMode.HTML)
     progress_msg: telegram.Message = update.message.reply_text('БYСTNНГ: 0/8')
     file_info: telegram.File = update.message.audio.get_file()
     log.debug(f'Got file_info: {file_info}')
