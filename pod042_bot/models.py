@@ -18,13 +18,13 @@ Base = declarative_base()
 
 user_and_chat_association = Table(
     'user_and_chat', Base.metadata,
-    Column('chats_chat_id', Integer, ForeignKey('chats.chat_id')),
-    Column('users_user_id', Integer, ForeignKey('users.user_id'))
+    Column('chats_chat_id', BigInteger, ForeignKey('chats.chat_id')),
+    Column('users_user_id', BigInteger, ForeignKey('users.user_id'))
 )
 
 chat_and_vk_group_association = Table(
     'chat_and_vk_group', Base.metadata,
-    Column('chats_chat_id', Integer, ForeignKey('chats.chat_id')),
+    Column('chats_chat_id', BigInteger, ForeignKey('chats.chat_id')),
     Column('vk_groups_url_name', String, ForeignKey('vk_groups.url_name'))
 )
 
@@ -85,7 +85,7 @@ class User(Base):
     """Пользователь."""
     __tablename__ = 'users'
 
-    user_id = Column(Integer, primary_key=True)
+    user_id = Column(BigInteger, primary_key=True)
     username = Column(String, nullable=True)
     first_name = Column(String)
     last_name = Column(String, nullable=True)
