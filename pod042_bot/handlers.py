@@ -2,8 +2,13 @@
 Обработчики особых событий.
 """
 import logging
+import math
+from io import BytesIO
 
+import numpy as np
+import telegram
 import vk_api
+from pydub import AudioSegment
 from telegram import Update, InlineKeyboardButton, ParseMode, InlineKeyboardMarkup, TelegramError
 from telegram.ext import CallbackContext
 
@@ -140,33 +145,50 @@ def bassboost(update: Update, context: CallbackContext):
     """РАЗБЕЖАВШИСЬ, ДЕЛАЕТ БАССБУСТ"""
     log.debug('Bassboost started!')
 
-    # def bass_line_freq(track):
-    #     sample_track = list(track)
-    #     log.debug(2)
-    #     # c-value
-    #     est_mean = np.mean(sample_track)
-    #     log.debug(3)
-    #     # a-values
-    #     est_std = 3 * np.std(sample_track) / (math.sqrt(2))
-    #     log.debug(4)
-    #     bass_factor = int(round((est_std - est_mean) * 0.005))
-    #     log.debug(5)
-    #     return bass_factor
-    #
-    # update.message.reply_text('БYСTNНГ')
-    # file_info: telegram.File = update.message.audio.get_file()
-    # log.debug(f'Got file_info: {file_info}')
-    # byte_array = file_info.download_as_bytearray()
-    # in_buffer = BytesIO(byte_array)
-    # out_buffer = BytesIO()
-    # log.debug('Downloaded, processing...')
-    # sample = AudioSegment.from_file(in_buffer, format='mp3')
-    # log.debug(1)
-    # filtered = sample.low_pass_filter(bass_line_freq(sample.get_array_of_samples()))
-    # log.debug(6)
-    # combined = (sample + 5).overlay(filtered + 10)
-    # log.debug(7)
-    # combined.export(out_buffer, codec='libmp3lame', format='mp3', bitrate='320')
-    # log.debug(8)
-    # log.debug('Processed, sending...')
-    # update.message.reply_audio(out_buffer)
+    def bass_line_freq(track):
+        sample_track = list(track)
+        context.bot.edit_message_text('БYСTNНГ: 2/8',
+                                      progress_msg.chat_id,
+                                      progress_msg.message_id)
+        # c-value
+        est_mean = np.mean(sample_track)
+        context.bot.edit_message_text('БYСTNНГ: 3/8',
+                                      progress_msg.chat_id,
+                                      progress_msg.message_id)
+        # a-values
+        est_std = 3 * np.std(sample_track) / (math.sqrt(2))
+        context.bot.edit_message_text('БYСTNНГ: 4/8',
+                                      progress_msg.chat_id,
+                                      progress_msg.message_id)
+        bass_factor = int(round((est_std - est_mean) * 0.005))
+        context.bot.edit_message_text('БYСTNНГ: 5/8',
+                                      progress_msg.chat_id,
+                                      progress_msg.message_id)
+        return bass_factor
+
+    progress_msg: telegram.Message = update.message.reply_text('БYСTNНГ: 0/8')
+    file_info: telegram.File = update.message.audio.get_file()
+    log.debug(f'Got file_info: {file_info}')
+    byte_array = file_info.download_as_bytearray()
+    in_buffer = BytesIO(byte_array)
+    out_buffer = BytesIO()
+    log.debug('Downloaded, processing...')
+    sample = AudioSegment.from_file(in_buffer, format='mp3')
+    context.bot.edit_message_text('БYСTNНГ: 1/8',
+                                  progress_msg.chat_id,
+                                  progress_msg.message_id)
+
+    filtered = sample.low_pass_filter(bass_line_freq(sample.get_array_of_samples()))
+    context.bot.edit_message_text('БYСTNНГ: 6/8',
+                                  progress_msg.chat_id,
+                                  progress_msg.message_id)
+    combined = (sample + 5).overlay(filtered + 10)
+    context.bot.edit_message_text('БYСTNНГ: 7/8',
+                                  progress_msg.chat_id,
+                                  progress_msg.message_id)
+    combined.export(out_buffer, codec='libmp3lame', format='mp3', bitrate='320')
+    context.bot.edit_message_text('БYСTNНГ: 8/8!!',
+                                  progress_msg.chat_id,
+                                  progress_msg.message_id)
+    log.debug('Processed, sending...')
+    update.message.reply_audio(out_buffer)
