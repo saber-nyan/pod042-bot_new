@@ -1,18 +1,14 @@
 """
 Некоторое установочное дерьмо.
 """
-import subprocess
-
 import setuptools
 
 with open('README.md', 'rt', encoding='utf-8') as f:
     long_description = f.read()
 
-subprocess.call('pip install https://github.com/saber-nyan/pydub/archive/master.zip', shell=True)
-
 setuptools.setup(
     name='pod042-bot',
-    version='0.0.2',
+    version='0.0.3',
     author='saber-nyan',
     author_email='saber-nyan@ya.ru',
     license='WTFPL',
@@ -34,13 +30,11 @@ setuptools.setup(
         'Typing :: Typed',
     ],
     install_requires=[
-        'python-telegram-bot==11.1.0',
-        'python-telegram-bot[socks]==11.1.0',
-        'SQLAlchemy==1.3.3',
-        'alembic==1.0.10',
-        'psycopg2-binary==2.8.2',
-        'vk-api==11.4.0',
-        # 'pydub @ https://github.com/saber-nyan/pydub/tarball/master#egg=pydub-0.23.2',
-        'numpy==1.16.3',
+        'python-telegram-bot==12.6.1',
+        'python-telegram-bot[socks]==12.6.1',
+        'SQLAlchemy==1.3.16',
+        'alembic==1.4.2',
+        'psycopg2-binary==2.8.5',
+        'vk-api==11.8.0',
     ],
 )

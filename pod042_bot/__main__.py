@@ -13,26 +13,25 @@ logging.config.dictConfig({
     'disable_existing_loggers': False,
     'formatters': {
         'standard': {
-            'format': config.LOG_FORMAT
+            'format': config.LOG_FORMAT,
         },
     },
     'handlers': {
         'default': {
             'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
             'formatter': 'standard',
-            'class': 'logging.StreamHandler'
         },
     },
     'loggers': {
-        '': {  # root logger
-            'handlers': ['default'],
+        '': {
             'level': 'INFO',
-            'propagate': True
+            'handlers': ['default'],
         },
         'pod042-bot': {
             'handlers': ['default'],
             'level': config.LOG_LEVEL,
-            'propagate': False
+            'propagate': False,
         },
     }
 })

@@ -28,8 +28,8 @@ except KeyError as e:
 THREADS_NUM = int(os.getenv('THREADS_NUM', 8))
 """Количество потоков."""
 
-LOG_FORMAT = os.getenv('LOG_FORMAT', 'P%(process)d T%(thread)d %(asctime)s <%(filename)s:'
-                                     '%(lineno)d, %(funcName)s()> [%(levelname)s] %(name)s: %(message)s')
+LOG_FORMAT = os.getenv('LOG_FORMAT', '%(asctime)s [%(levelname)s] P%(process)d <%(filename)s:%(lineno)d'
+                                     ', %(funcName)s()> %(name)s: %(message)s')
 """
 Формат лога, см.
 https://docs.python.org/3/library/logging.html#logrecord-attributes
