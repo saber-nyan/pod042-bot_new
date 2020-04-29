@@ -7,4 +7,4 @@ build:
 release:
   command:
     - ./release.sh
-    image: pod042-bot
+  image: web
