@@ -87,7 +87,8 @@ def main():
     updater = Updater(
         token=config.BOT_TOKEN,
         workers=config.THREADS_NUM,
-        request_kwargs=request_kwargs
+        request_kwargs=request_kwargs,
+        use_context=True
     )
 
     d = updater.dispatcher

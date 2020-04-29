@@ -4,25 +4,27 @@
 import logging
 
 import vk_api
-from telegram import Bot, Update, InlineKeyboardButton, ParseMode, InlineKeyboardMarkup, TelegramError
+from telegram import Update, InlineKeyboardButton, ParseMode, InlineKeyboardMarkup, TelegramError
+from telegram.ext import CallbackContext
 
 from pod042_bot import models, vk_client
 
 log = logging.getLogger('pod042-bot')
 
 
-def error(bot: Bot, update: Update, tg_error: TelegramError):
+def error(update: Update, context: CallbackContext):
     """Обрабатывает ошибки (но работает ли?...)"""
-    log.error(f'Got error! {tg_error.message}')
+    error: TelegramError = context.error
+    log.error(f'Got error! {error}')
     # noinspection PyBroadException
     try:
         update.message.reply_text(f'Произошла ошибка, пожалуйста, свяжитесь с @saber_nyan :(\n'
-                                  f'{tg_error.message}')
+                                  f'{error}')
     except Exception:
-        pass
+        log.warning('Failed to notify user!', exc_info=True)
 
 
-def all_messages(bot: Bot, update: Update):
+def all_messages(update: Update, context: CallbackContext):
     """Обрабатывает ВСЕ сообщения."""
     if update.channel_post:
         return
@@ -48,7 +50,7 @@ def all_messages(bot: Bot, update: Update):
             user.chats.append(chat)
 
 
-def inline_button(bot: Bot, update: Update):
+def inline_button(update: Update, context: CallbackContext):
     """Обрабатывает нажатия кнопок."""
     query = update.callback_query
     chat_id = query.message.chat_id
@@ -62,10 +64,10 @@ def inline_button(bot: Bot, update: Update):
             for group in chat.vk_groups:
                 keyboard.append([InlineKeyboardButton(group.name, callback_data=f'vkd_{group.url_name}'), ])
 
-        bot.edit_message_text('Редактирование групп ВК!\n'
-                              'Нажмите на группу для удаления, отправьте ссылку для добавления, '
-                              '/abort для отмены.', chat_id=chat_id, message_id=msg_id,
-                              reply_markup=InlineKeyboardMarkup(keyboard))
+        context.bot.edit_message_text('Редактирование групп ВК!\n'
+                                      'Нажмите на группу для удаления, отправьте ссылку для добавления, '
+                                      '/abort для отмены.', chat_id=chat_id, message_id=msg_id,
+                                      reply_markup=InlineKeyboardMarkup(keyboard))
     elif query.data.startswith('vkd_'):
         url_name = query.data.split('vkd_', 1)[1]
         with models.session_scope() as session:
@@ -79,15 +81,15 @@ def inline_button(bot: Bot, update: Update):
             for group in chat.vk_groups:
                 keyboard.append([InlineKeyboardButton(group.name, callback_data=f'vkd_{group.url_name}'), ])
 
-        bot.edit_message_text('Редактирование групп ВК!\n'
-                              'Нажмите на группу для удаления, отправьте ссылку для добавления, '
-                              '/abort для отмены.', chat_id=chat_id, message_id=msg_id,
-                              reply_markup=InlineKeyboardMarkup(keyboard))
+        context.bot.edit_message_text('Редактирование групп ВК!\n'
+                                      'Нажмите на группу для удаления, отправьте ссылку для добавления, '
+                                      '/abort для отмены.', chat_id=chat_id, message_id=msg_id,
+                                      reply_markup=InlineKeyboardMarkup(keyboard))
     else:
         log.error(f'Unknown query {query.data}!')
 
 
-def new_vk_group(bot: Bot, update: Update):
+def new_vk_group(update: Update, context: CallbackContext):
     """Добавляет группу ВК, если включен соответствующий режим."""
     with models.session_scope() as session:
         chat: models.Chat = session.query(models.Chat).get(update.effective_chat.id)
@@ -134,7 +136,7 @@ def new_vk_group(bot: Bot, update: Update):
     update.message.reply_text(msg, parse_mode=ParseMode.HTML)
 
 
-def bassboost(bot: Bot, update: Update):
+def bassboost(update: Update, context: CallbackContext):
     """РАЗБЕЖАВШИСЬ, ДЕЛАЕТ БАССБУСТ"""
     log.debug('Bassboost started!')
 

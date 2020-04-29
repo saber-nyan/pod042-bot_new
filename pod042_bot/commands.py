@@ -9,7 +9,8 @@ from typing import List, Dict
 import pkg_resources
 import requests
 from sqlalchemy.orm import selectinload
-from telegram import Bot, Update, ParseMode, InlineKeyboardMarkup, InlineKeyboardButton, ChatAction
+from telegram import Update, ParseMode, InlineKeyboardMarkup, InlineKeyboardButton, ChatAction
+from telegram.ext import CallbackContext
 
 from pod042_bot import models, vk_client, utils
 
@@ -18,7 +19,7 @@ HTML_ANEK_REGEX = re.compile(r'<meta name="description" content="(.*?)">', re.DO
 log = logging.getLogger('pod042-bot')
 
 
-def abort(bot: Bot, update: Update):
+def abort(update: Update, context: CallbackContext):
     """Сбрасывает текущее состояние чата."""
     if update.channel_post:
         return
@@ -31,13 +32,13 @@ def abort(bot: Bot, update: Update):
             update.message.reply_text('Отменено.')
 
 
-def start(bot: Bot, update: Update):
+def start(update: Update, context: CallbackContext):
     """Простое приветствие!"""
     log.info(f'User #{update.effective_user.id} started bot')
     update.message.reply_text('Ура, я запущен!')
 
 
-def everyone(bot: Bot, update: Update):
+def everyone(update: Update, context: CallbackContext):
     """Упоминает всех в чате."""
     if update.channel_post:
         return
@@ -57,7 +58,7 @@ def everyone(bot: Bot, update: Update):
         update.effective_chat.send_message('Никого не знаю!')
 
 
-def config(bot: Bot, update: Update):
+def config(update: Update, context: CallbackContext):
     """Входит в режим конфигурации."""
     with models.session_scope() as session:
         chat: models.Chat = session.query(models.Chat).get(update.effective_chat.id)
@@ -80,7 +81,7 @@ def config(bot: Bot, update: Update):
                               ))
 
 
-def vk_pic(bot: Bot, update: Update):
+def vk_pic(update: Update, context: CallbackContext):
     """Возвращает случайно выбранное медиа из настроенных для чата групп ВКонтакте."""
     with models.session_scope() as session:
         chat: models.Chat = session.query(models.Chat).get(update.effective_chat.id)
@@ -88,7 +89,7 @@ def vk_pic(bot: Bot, update: Update):
         if not groups:
             update.message.reply_text('Сначала настройте группы с помощью /config!')
             return
-        bot.send_chat_action(update.effective_chat.id, ChatAction.UPLOAD_PHOTO)
+        context.bot.send_chat_action(update.effective_chat.id, ChatAction.UPLOAD_PHOTO)
         chosen_group: models.VkGroup = random.choice(groups)
         log.debug(f'Selected {chosen_group}')
         response: List[Dict] = vk_client.vk_tools.get_all('wall.get', max_count=10, values={
@@ -99,7 +100,7 @@ def vk_pic(bot: Bot, update: Update):
         media_url = ''
         while not media_url:
             post = random.choice(response)
-            if post['marked_as_ads']:
+            if post.get('marked_as_ads', False):
                 log.debug('Skipping ad')
                 continue
             if 'attachments' not in post:
@@ -131,8 +132,10 @@ def vk_pic(bot: Bot, update: Update):
         update.message.reply_photo(photo=media_url, caption=f'Из https://vk.com/{chosen_group.url_name}')
 
 
-def codfish(bot: Bot, update: Update, args: List[str]):
+def codfish(update: Update, context: CallbackContext):
     """Бьет треской по лицу выбранных пользователей. С видео!"""
+    args = context.args
+    bot = context.bot
     if not args:
         update.message.reply_text('Неверный формат команды. Пиши `/codfish @user_name1 @user_name2 ...`!',
                                   parse_mode=ParseMode.MARKDOWN)
@@ -156,15 +159,17 @@ def codfish(bot: Bot, update: Update, args: List[str]):
                     bot.send_video(
                         update.effective_chat.id, f,
                         caption=f'Со всего размаху пизданул треской '
-                        f'{", ".join(result)}, да и для себя трески не пожалел.'
+                                f'{", ".join(result)}, да и для себя трески не пожалел.'
                     )
                 else:
                     bot.send_video(update.effective_chat.id, f,
                                    caption=f'Со всего размаху пизданул треской {", ".join(result)}.')
 
 
-def pat(bot: Bot, update: Update, args: List[str]):
+def pat(update: Update, context: CallbackContext):
     """Гладит указанных пользователей. Да, тоже с видео!"""
+    args = context.args
+    bot = context.bot
     if not args:
         update.message.reply_text('Неверный формат команды. Пиши `/pat @user_name1 @user_name2 ...`!',
                                   parse_mode=ParseMode.MARKDOWN)
@@ -192,7 +197,7 @@ def pat(bot: Bot, update: Update, args: List[str]):
                                    caption=f'Ментально погладил {", ".join(result)}!')
 
 
-def anek(bot: Bot, update: Update):
+def anek(update: Update, context: CallbackContext):
     """Присылает рандомный анекдот с baneks.ru."""
     response = requests.get(f'https://baneks.ru/{random.randrange(1, 1142)}')
     response.encoding = 'utf-8'
@@ -201,7 +206,7 @@ def anek(bot: Bot, update: Update):
     update.message.reply_text(f'<code>{result}</code>', parse_mode=ParseMode.HTML)
 
 
-def quote(bot: Bot, update: Update):
+def quote(update: Update, context: CallbackContext):
     """Присылает рандомную цитату с tproger.com."""
     result = requests.get('https://tproger.ru/wp-content/plugins/citation-widget/get-quote.php').text
     update.message.reply_text(f'<code>{result}</code>', parse_mode=ParseMode.HTML)

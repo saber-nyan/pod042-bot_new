@@ -5,13 +5,17 @@ import re
 
 from jconfig.base import BaseConfig
 from vk_api import VkApi, VkTools
+from vk_api.vk_api import VkApiMethod
 
 from pod042_bot import config, models
 
-VK_VER = 5.95
+VK_VER = 5.103
 VK_GROUP_REGEX = re.compile(r".*vk\.com/(.+?)(\?.+)?$", re.MULTILINE)
 
 log = logging.getLogger('pod042-bot')
+
+vk: VkApiMethod
+vk_tools: VkTools
 
 
 class DbConfig(BaseConfig):

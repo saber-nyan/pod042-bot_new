@@ -32,6 +32,7 @@ setuptools.setup(
     install_requires=[
         'python-telegram-bot==12.6.1',
         'python-telegram-bot[socks]==12.6.1',
+        'PySocks==1.7.1',
         'SQLAlchemy==1.3.16',
         'alembic==1.4.2',
         'psycopg2-binary==2.8.5',
