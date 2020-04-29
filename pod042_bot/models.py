@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from typing import Dict
 
 import sqlalchemy.orm as orm
-from sqlalchemy import create_engine, Column, Integer, String, Table, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, Table, ForeignKey, BigInteger
 from sqlalchemy.ext.declarative import declarative_base
 
 from pod042_bot import config
@@ -62,9 +62,9 @@ class Chat(Base):
     """Личный или групповой чат."""
     __tablename__ = 'chats'
 
-    chat_id = Column(Integer, primary_key=True)
+    chat_id = Column(BigInteger, primary_key=True)
     chat_title = Column(String, nullable=True)
-    state = Column(Integer, default=ChatState.NONE, nullable=False)
+    state = Column(Integer, default=ChatState.NONE, server_default='0', nullable=False)
 
     users = orm.relationship(
         'User',
@@ -78,7 +78,7 @@ class Chat(Base):
 
     def __repr__(self) -> str:
         return f'<Chat(chat_id={self.chat_id}, chat_title={self.chat_title}, ' \
-            f'state={self.state}, users={self.users}, vk_groups={self.vk_groups})>'
+               f'state={self.state}, users={self.users}, vk_groups={self.vk_groups})>'
 
 
 class User(Base):
@@ -98,7 +98,7 @@ class User(Base):
 
     def __repr__(self) -> str:
         return f'<User(user_id={self.user_id}, username={self.username}, ' \
-            f'first_name={self.first_name}, last_name={self.last_name})>'
+               f'first_name={self.first_name}, last_name={self.last_name})>'
 
 
 def init_db():
